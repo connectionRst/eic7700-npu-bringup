@@ -1,0 +1,19 @@
+本仓库采用分许可（per-file licensing）：
+
+1) docs/  —— 文档
+   Creative Commons Attribution 4.0 International (CC BY 4.0)
+   https://creativecommons.org/licenses/by/4.0/
+   可自由分享、改编，需署名。
+
+2) patches/ —— 内核补丁
+   GNU General Public License v2.0（以每个补丁文件头部的
+   `SPDX-License-Identifier` 为准；部分 DTS 为 `GPL-2.0 OR MIT`）。
+   这些文件带有原始版权声明，例如
+     Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.
+   再分发时必须保留其版权与许可声明。厂商源码的公开位置：
+   https://github.com/eswincomputing/linux-stable
+
+3) scripts/ —— 脚本
+   MIT License（除非文件头另有说明）。
+
+本仓库不包含任何厂商 SDK、固件二进制或预编译发行包。

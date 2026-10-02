@@ -1,0 +1,46 @@
+diff --git a/recipes-kernel/linux/linux-eswin-ebc77-mainline/hifive-premier-p550_defconfig b/recipes-kernel/linux/linux-eswin-ebc77-mainline/hifive-premier-p550_defconfig
+index 4716365..a9c8ca6 100644
+--- a/recipes-kernel/linux/linux-eswin-ebc77-mainline/hifive-premier-p550_defconfig
++++ b/recipes-kernel/linux/linux-eswin-ebc77-mainline/hifive-premier-p550_defconfig
+@@ -2021,6 +2021,10 @@ CONFIG_COMMON_CLK_EIC7700=y
+ CONFIG_XILINX_VCU=m
+ CONFIG_HWSPINLOCK=y
+ CONFIG_MAILBOX=y
++CONFIG_ESWIN_MBOX=y
++CONFIG_ESWIN_KHANDLE=y
++CONFIG_ESWIN_DSP=m
++CONFIG_ESWIN_NPU=m
+ CONFIG_PLATFORM_MHU=m
+ CONFIG_MAILBOX_TEST=m
+ CONFIG_IOMMU_ESWIN=y
+@@ -2052,6 +2056,17 @@ CONFIG_EXTCON_SM5502=m
+ CONFIG_EXTCON_USB_GPIO=m
+ CONFIG_EXTCON_USBC_TUSB320=m
+ CONFIG_MEMORY=y
++CONFIG_ESWIN_MC=y
++CONFIG_ESWIN_RSV_MEMBLOCK=y
++CONFIG_ESWIN_CODACACHE_CONTROLLER=y
++CONFIG_ESWIN_BUDDY=y
++CONFIG_ESWIN_PROC=y
++CONFIG_ESWIN_RSVMEM_HEAP=y
++CONFIG_ESWIN_MMZ_VB=y
++CONFIG_ESWIN_DEV_DMA_BUF=y
++CONFIG_ESWIN_IOMMU_RSV=y
++CONFIG_ESWIN_DMA_MEMCP=y
++CONFIG_ESWIN_MALLOC_DMABUF=y
+ CONFIG_IIO=y
+ CONFIG_PAC1934=m
+ CONFIG_PWM=y
+diff --git a/recipes-kernel/linux/linux-mainline.bb b/recipes-kernel/linux/linux-mainline.bb
+index d26e09b..74fffd2 100644
+--- a/recipes-kernel/linux/linux-mainline.bb
++++ b/recipes-kernel/linux/linux-mainline.bb
+@@ -68,6 +68,8 @@ SRC_URI:append:eswin-ebc77-mainline = " \
+            file://0029-riscv-dts-eswin-set-1.4GHz-as-the-maximum-cpu-freque.patch \
+            file://0030-dts-add-mmc-axi-clk.patch \
+            file://0031-riscv-dts-eic7700-add-sdio-et.-al.patch \
++           file://0032-riscv-dts-eswin-add-NPU-LLC-mbox-nodes-and-EBC77-board.patch \
++           file://0033-soc-memory-mailbox-iommu-add-Eswin-NPU-LLC-DSP-drivers.patch \
+            file://hifive-premier-p550_defconfig \
+            file://iwd-wifi.cfg \
+ "

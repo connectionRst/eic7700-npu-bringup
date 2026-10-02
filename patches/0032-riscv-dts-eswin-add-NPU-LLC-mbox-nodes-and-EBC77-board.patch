@@ -1,0 +1,252 @@
+From e26a00f1600033b7976933755abcf92e149d3b34 Mon Sep 17 00:00:00 2001
+From: dev <dev@local>
+Date: Wed, 23 Sep 2026 12:23:59 +0800
+Subject: [PATCH 32/33] dts: eswin: add NPU/LLC/mbox nodes and EBC77
+ (StarPro64) board enablement
+
+---
+ arch/riscv/boot/dts/eswin/Makefile           |   1 +
+ arch/riscv/boot/dts/eswin/eic7700-sbc-a1.dts | 135 +++++++++++++++++++
+ arch/riscv/boot/dts/eswin/eic7700.dtsi       |  77 +++++++++++
+ 3 files changed, 213 insertions(+)
+ create mode 100644 arch/riscv/boot/dts/eswin/eic7700-sbc-a1.dts
+
+diff --git a/arch/riscv/boot/dts/eswin/Makefile b/arch/riscv/boot/dts/eswin/Makefile
+index 224101a..8371b2d 100644
+--- a/arch/riscv/boot/dts/eswin/Makefile
++++ b/arch/riscv/boot/dts/eswin/Makefile
+@@ -1,2 +1,3 @@
+ # SPDX-License-Identifier: GPL-2.0
+ dtb-$(CONFIG_ARCH_ESWIN) += eic7700-hifive-premier-p550.dtb
++dtb-$(CONFIG_ARCH_ESWIN) += eic7700-sbc-a1.dtb
+diff --git a/arch/riscv/boot/dts/eswin/eic7700-sbc-a1.dts b/arch/riscv/boot/dts/eswin/eic7700-sbc-a1.dts
+new file mode 100644
+index 0000000..a68d0d1
+--- /dev/null
++++ b/arch/riscv/boot/dts/eswin/eic7700-sbc-a1.dts
+@@ -0,0 +1,135 @@
++// SPDX-License-Identifier: (GPL-2.0 OR MIT)
++/*
++ * Copyright (c) 2024, Beijing ESWIN Computing Technology Co., Ltd.
++ */
++
++/dts-v1/;
++
++#include "eic7700.dtsi"
++#include "eic7700-pinctrl.dtsi"
++
++/ {
++	compatible = "eswin,ebc77", "eswin,eic7700";
++        model = "ESWIN EBC77";
++
++	aliases {
++		serial0 = &uart0;
++		mmc0 = &sdio0;
++		ethernet0 = &gmac0;
++	};
++
++	chosen {
++		stdout-path = "serial0:115200n8";
++	};
++
++	memory@80000000 {
++		device_type = "memory";
++		reg = <0x0 0x80000000 0x4 0x00000000>;
++	};
++
++	reserved-memory {
++		#address-cells = <2>;
++		#size-cells = <2>;
++		ranges;
++
++		/* NPU on-die SRAM (4 MiB), shared by the NPU/LLC (codacache)
++		 * drivers via their spram-region phandles. */
++		sprammemory: sprammemory@59000000 {
++			reg = <0x0 0x59000000 0x0 0x400000>;
++			no-map;
++		};
++
++		/* NPU DRAM pool. The Eswin user-space runtime hardcodes this
++		 * node name and the eswin_rsvmem driver only accepts no-map,
++		 * non-reusable "eswin-reserve-memory" nodes. 1 GiB top-aligned
++		 * in the 16 GiB DRAM (0x440000000..0x480000000); must stay
++		 * inside the NPU DMA window (phys >= 0xc0000000). */
++		mmz_nid_0_part_0 {
++			compatible = "eswin-reserve-memory";
++			reg = <0x4 0x40000000 0x0 0x40000000>;
++			no-map;
++		};
++	};
++
++	/* NPU core supply (SVCC): fixed 900 mV always-on rail (mpq8785 is
++	 * hwmon-only in mainline). min==max so the regulator core accepts
++	 * set-voltage calls that contain the current voltage; the NPU
++	 * node sets apply_npu_1G_freq to stay on the 1.04 GHz/900 mV tier. */
++	npu_svcc: regulator-npu-svcc {
++		compatible = "regulator-fixed";
++		regulator-name = "npu-svcc";
++		regulator-min-microvolt = <900000>;
++		regulator-max-microvolt = <900000>;
++		regulator-always-on;
++		regulator-boot-on;
++	};
++
++	vcc_1v8: vcc1v8 {
++		compatible = "regulator-fixed";
++		regulator-name = "vcc1v8";
++		regulator-always-on;
++		regulator-boot-on;
++		regulator-min-microvolt = <1800000>;
++		regulator-max-microvolt = <1800000>;
++	};
++
++	xtal24m: oscillator {
++		compatible = "fixed-clock";
++		clock-frequency = <24000000>;
++		#clock-cells = <0>;
++		clock-output-names = "xtal24m";
++	};
++};
++
++&clk {
++	status = "okay";
++};
++
++&gmac0 {
++	status = "okay";
++
++	mdio {
++		status = "okay";
++	};
++};
++
++&pinctrl {
++	status = "okay";
++};
++
++&reset {
++	status = "okay";
++};
++
++&npu {
++	status = "okay";
++	spram-region = <&sprammemory>;
++	npu-supply = <&npu_svcc>;
++	apply_npu_1G_freq;
++};
++
++&llc {
++	status = "okay";
++	spram-region = <&sprammemory>;
++	npu-supply = <&npu_svcc>;
++};
++
++&d0_mbox2 {
++	status = "okay";
++};
++
++&scu_sys_con {
++	status = "okay";
++};
++
++&sdio0 {
++	status = "okay";
++};
++
++&uart0 {
++	status = "okay";
++};
++
++&uart2 {
++	status = "okay";
++};
+diff --git a/arch/riscv/boot/dts/eswin/eic7700.dtsi b/arch/riscv/boot/dts/eswin/eic7700.dtsi
+index 3a73638..7b16a31 100644
+--- a/arch/riscv/boot/dts/eswin/eic7700.dtsi
++++ b/arch/riscv/boot/dts/eswin/eic7700.dtsi
+@@ -527,5 +527,82 @@
+ 			reset-names = "arst";
+ 			status = "disabled";
+ 		};
++
++		/* SCU system-config syscon (vendor d0_sys_con). Used by the
++		 * NPU/LLC (codacache) driver (interleave bit at 0x324) and by
++		 * the eswin-win2030-sid driver (stream-ID + TBU power, matches
++		 * "eswin,win2030-scu-sys-con"). */
++		scu_sys_con: scu-sys-con@51810000 {
++			compatible = "eswin,win2030-scu-sys-con", "eswin,eic7700-scu-sys-con", "syscon";
++			#syscon-cells = <1>;
++			reg = <0x0 0x51810000 0x0 0x8000>;
++			numa-node-id = <0>;
++			status = "disabled";
++		};
++
++		/* NPU shared L2/LLC (codacache) controller. Clock IDs:
++		 * aclk 148, cfg_clk 149, llc_clk 150, core_clk 151. Reset IDs
++		 * (vendor group 6 bits 0,1,2,6): axi 62, cfg 63, core 64, llc 68. */
++		llc: llc@51c00000 {
++			compatible = "eswin,llc";
++			reg = <0x0 0x51c00000 0x0 0x400000>;
++			clocks = <&clk 148>, <&clk 149>, <&clk 150>, <&clk 151>;
++			clock-names = "aclk", "cfg_clk", "llc_clk", "core_clk";
++			resets = <&reset 62>, <&reset 63>, <&reset 64>, <&reset 68>;
++			reset-names = "axi", "cfg", "core", "llc";
++			eswin,syscfg = <&scu_sys_con 0x324>;
++			numa-node-id = <0>;
++			status = "disabled";
++		};
++
++		/* NPU0 host<->E31 mailbox (vendor mbox #4: pclk gates 206/207,
++		 * resets 117/118). */
++		d0_mbox2: mbox@50a40000 {
++			compatible = "eswin,npu0-mailbox";
++			reg = <0x0 0x50a40000 0x0 0x10000
++				0x0 0x50a50000 0x0 0x10000>;
++			interrupt-parent = <&plic>;
++			interrupts = <0x79>;
++			#mbox-cells = <1>;
++			clocks = <&clk 206>, <&clk 207>;
++			clock-names = "pclk_mailbox_host", "pclk_mailbox_device";
++			resets = <&reset 117>, <&reset 118>;
++			reset-names = "rst", "rst_device";
++			lock-bit = <1>;
++			irq-bit = <8>;
++			status = "disabled";
++		};
++
++		/* E31 NPU. Clock IDs: aclk 148, cfg_clk 149, core_clk 151
++		 * (GATE_NPU_CLK), clk_npu_llc_aclk 150, e31_core_clk 152,
++		 * core mux 27, llc mux 26, spll2_fout2 9, spll1_fout1 5,
++		 * llc src0 divider 63, llc src1 divider 64, vpll_fout1 11.
++		 * DMA goes through the direct NoC window (phys >= 0xc0000000);
++		 * no iommus property is used by the driver. */
++		npu: npu@51c00000 {
++			compatible = "eswin,npu";
++			reg = <0x0 0x51c00000 0x0 0x400000>;
++			interrupt-parent = <&plic>;
++			interrupts = <0x183>, <0x10>;
++			#size-cells = <2>;
++			numa-node-id = <0>;
++			dma-noncoherent;
++			dsp-avail-num = <1>;
++			spram-size = <0x400000>;
++			firmware-name = "eic7700_die0_e31_fw";
++			npu_mbox = <&d0_mbox2>;
++			clocks = <&clk 148>, <&clk 149>, <&clk 151>, <&clk 150>,
++				<&clk 152>, <&clk 27>, <&clk 26>,
++				<&clk 9>, <&clk 5>, <&clk 63>, <&clk 64>, <&clk 11>;
++			clock-names = "aclk", "cfg_clk", "core_clk",
++				"clk_npu_llc_aclk", "e31_core_clk",
++				"mux_u_npu_core_3mux1_gfree", "mux_u_npu_llclk_3mux1_gfree",
++				"fixed_rate_clk_spll2_fout2", "fixed_rate_clk_spll1_fout1",
++				"clk_clk_npu_llc_src0", "clk_clk_npu_llc_src1",
++				"fixed_rate_clk_vpll_fout1";
++			resets = <&reset 65>;
++			reset-names = "e31_core";
++			status = "disabled";
++		};
+ 	};
+ };
+-- 
+2.55.0
+

@@ -1,0 +1,12 @@
+[Unit]
+Description=NPU boot deferred-probe check
+After=multi-user.target
+Wants=multi-user.target
+
+[Service]
+Type=oneshot
+ExecStart=/bin/bash /home/debian/npu_boot_check.sh
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
