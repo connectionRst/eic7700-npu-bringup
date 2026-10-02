@@ -34,6 +34,7 @@
 | 90 | [postmortem-dtb-pmic](docs/90-postmortem-dtb-pmic.md) | **事故复盘**：坏 DTB → PMIC 地址 → systemd 崩 → 彻底不上电的完整取证与分级恢复方案 | ✅ 基于会话/日志取证 |
 | 91 | [cpu-isa-diagnosis](docs/91-cpu-isa-diagnosis.md) | EIC7700 CPU ISA 特性探测（基于 MIT 的 [ruapu](https://github.com/nihui/ruapu)） | ✅ 上板 |
 | 92 | [clockreset-mapping](docs/92-clockreset-mapping.md) | vendor(group,mask) → mainline reset/clock ID 映射表 | ✅ 上板核对 |
+| 93 | [references](docs/93-references.md) | 外部资料索引：SDK/镜像、上手指南、TRM、原理图、社区讨论（原 `reference.txt` + 复盘补充） | ✅ 链接核对 |
 
 ## 关键结论速览
 
@@ -82,6 +83,7 @@ patches/   主线化补丁与 meta-riscv 本地改动
 | `eswin-nntools/STARTER-KIT-npu-boot.md` | `docs/08-starter-kit-npu-boot.md` |
 | `eswin-nntools/BOARD-DAMAGE-REPORT.md` | `docs/90-postmortem-dtb-pmic.md` |
 | `eswin-nntools/board-scripts/restore-boot-files.sh` | `scripts/restore-boot-files.sh` |
+| `eswin-nntools/reference.txt` | `docs/93-references.md` |
 
 ## 复现前提
 
